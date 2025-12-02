@@ -1,0 +1,144 @@
+================================================================================
+2022년 9월 신고량 예측 모델 비교 실험 결과
+================================================================================
+
+[전체 모델 성능 비교]
+
+ Station             Model       MAE      RMSE       R2  Accuracy
+ seogang     Random Forest  7.580964  9.956701 0.106729 78.287657
+ seogang Gradient Boosting  7.712631  9.978419 0.102828 77.910556
+ seogang           XGBoost  7.685544 10.063652 0.087436 77.988134
+ seogang          LightGBM  7.567284  9.900475 0.116789 78.326837
+ seogang          CatBoost  7.329107  9.711441 0.150194 79.008992
+ seogang    Neural Network  7.481340  9.815346 0.131913 78.572988
+ seogang          Ensemble  7.453956  9.779239 0.138288 78.651415
+gongdeok     Random Forest  6.297349  8.340397 0.134939 77.013731
+gongdeok Gradient Boosting  6.484738  8.503188 0.100841 76.329733
+gongdeok           XGBoost  6.562890  8.620164 0.075931 76.044469
+gongdeok          LightGBM  6.455037  8.554344 0.089989 76.438147
+gongdeok          CatBoost  6.258119  8.202703 0.163267 77.156926
+gongdeok    Neural Network  6.446639  8.339888 0.135045 76.468801
+gongdeok          Ensemble  6.327280  8.296245 0.144074 76.904479
+worldcup     Random Forest  6.942826  9.171634 0.207666 76.160486
+worldcup Gradient Boosting  7.190995  9.502934 0.149391 75.308354
+worldcup           XGBoost  7.087646  9.381831 0.170933 75.663221
+worldcup          LightGBM  7.144238  9.458315 0.157360 75.468900
+worldcup          CatBoost  6.837554  9.094962 0.220858 76.521960
+worldcup    Neural Network  6.880860  9.098855 0.220191 76.373260
+worldcup          Ensemble  6.882793  9.103708 0.219359 76.366623
+  hongik     Random Forest 17.478968 23.530580 0.610608 80.284192
+  hongik Gradient Boosting 17.790852 23.804027 0.601506 79.932395
+  hongik           XGBoost 17.311224 23.318457 0.617597 80.473403
+  hongik          LightGBM 17.205627 23.131706 0.623698 80.592514
+  hongik          CatBoost 17.377112 22.660243 0.638881 80.399083
+  hongik    Neural Network 18.126681 23.023514 0.627210 79.553590
+  hongik          Ensemble 17.228512 22.777199 0.635144 80.566701
+yonggang     Random Forest  7.309896  9.331846 0.195107 79.488294
+yonggang Gradient Boosting  7.493428  9.422285 0.179430 78.973301
+yonggang           XGBoost  7.675965  9.571781 0.153184 78.461098
+yonggang          LightGBM  7.598070  9.589369 0.150070 78.679673
+yonggang          CatBoost  7.367197  9.335228 0.194523 79.327509
+yonggang    Neural Network  7.731355  9.654623 0.138463 78.305674
+yonggang          Ensemble  7.350574  9.268000 0.206083 79.374151
+
+[각 역별 최고 성능 모델]
+
+seogang:
+  최고 모델: CatBoost
+  MAE: 7.3291
+  RMSE: 9.7114
+  R²: 0.1502
+  예측 정확도: 79.01%
+
+gongdeok:
+  최고 모델: CatBoost
+  MAE: 6.2581
+  RMSE: 8.2027
+  R²: 0.1633
+  예측 정확도: 77.16%
+
+worldcup:
+  최고 모델: CatBoost
+  MAE: 6.8376
+  RMSE: 9.0950
+  R²: 0.2209
+  예측 정확도: 76.52%
+
+hongik:
+  최고 모델: LightGBM
+  MAE: 17.2056
+  RMSE: 23.1317
+  R²: 0.6237
+  예측 정확도: 80.59%
+
+yonggang:
+  최고 모델: Random Forest
+  MAE: 7.3099
+  RMSE: 9.3318
+  R²: 0.1951
+  예측 정확도: 79.49%
+
+[모델별 평균 성능]
+
+                        MAE       RMSE        R2   Accuracy
+Model                                                      
+CatBoost           9.033818  11.800915  0.273545  78.482894
+Ensemble           9.048623  11.844878  0.268589  78.372674
+Gradient Boosting  9.334529  12.242171  0.226799  77.690868
+LightGBM           9.194051  12.126842  0.227581  77.901214
+Neural Network     9.333375  11.986445  0.250564  77.854862
+Random Forest      9.122001  12.066232  0.251010  78.246872
+XGBoost            9.264654  12.191177  0.221016  77.726065
+
+[2022년 9월 신고량 예측 결과]
+
+
+seogang 역:
+  최고 모델: CatBoost
+  Random Forest: 평균 37.77건
+  Gradient Boosting: 평균 38.02건
+  XGBoost: 평균 37.34건
+  LightGBM: 평균 38.17건
+  CatBoost: 평균 37.81건
+  Neural Network: 평균 35.90건
+  Ensemble: 평균 37.50건
+
+gongdeok 역:
+  최고 모델: CatBoost
+  Random Forest: 평균 31.64건
+  Gradient Boosting: 평균 31.64건
+  XGBoost: 평균 32.40건
+  LightGBM: 평균 30.87건
+  CatBoost: 평균 30.90건
+  Neural Network: 평균 28.35건
+  Ensemble: 평균 30.97건
+
+worldcup 역:
+  최고 모델: CatBoost
+  Random Forest: 평균 32.38건
+  Gradient Boosting: 평균 32.70건
+  XGBoost: 평균 32.51건
+  LightGBM: 평균 32.18건
+  CatBoost: 평균 33.47건
+  Neural Network: 평균 32.68건
+  Ensemble: 평균 32.65건
+
+hongik 역:
+  최고 모델: LightGBM
+  Random Forest: 평균 106.70건
+  Gradient Boosting: 평균 106.74건
+  XGBoost: 평균 104.97건
+  LightGBM: 평균 108.40건
+  CatBoost: 평균 104.42건
+  Neural Network: 평균 95.06건
+  Ensemble: 평균 104.38건
+
+yonggang 역:
+  최고 모델: Random Forest
+  Random Forest: 평균 39.97건
+  Gradient Boosting: 평균 39.58건
+  XGBoost: 평균 39.54건
+  LightGBM: 평균 39.68건
+  CatBoost: 평균 40.70건
+  Neural Network: 평균 36.17건
+  Ensemble: 평균 39.27건

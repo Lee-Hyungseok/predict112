@@ -1,4 +1,4 @@
-date,dayoff,nextdayoff,seogang_off,gongdeok_off,worldcup_off,hongik_off,yonggang_off,av_temperature,rain,wind_speed,seogang,gongdeok,worldcup,hongik,yonggang,days_금,days_목,days_수,days_월,days_일,days_토,days_화
+date,dayoff,nextdayoff,seogang_off,gongdeok_off,worldcup_off,hongik_off,yonggang_off,av_temperature,rain,wind_speed,seogang,gongdeok,worldcup,hongik,yonggang,days_fri,days_thu,days_wed,days_mon,days_sun,days_sat,days_tue
 2017-01-01,1,0,-1.3013323807668442,-1.4918643071873623,-0.9282718252747056,-1.649844192812778,-1.690058454239071,-0.9008014432711718,-0.263106581530831,-0.590046558721951,37,14,23,172,24,False,False,False,False,True,False,False
 2017-01-02,0,0,0.5080662671596351,0.4419458433484029,0.07505413065209152,0.14967157123077185,0.4621514494876257,-0.766575662527844,-0.263106581530831,0.07045225069195384,13,24,28,43,17,False,False,False,True,False,False,False
 2017-01-03,0,0,0.8017041135186699,0.5673388477553212,0.28147512721889884,0.45035792225595156,0.6647689706837331,-1.0062645567123578,-0.263106581530831,-0.8102128285265858,20,19,27,56,35,False,False,False,False,False,False,True
