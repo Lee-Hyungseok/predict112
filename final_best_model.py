@@ -500,6 +500,48 @@ plt.tight_layout()
 plt.savefig('final_total_by_station.png', dpi=300, bbox_inches='tight')
 print("✓ final_total_by_station.png 저장 완료")
 
+# 5. 실제값 vs 예측값 비교 그래프 (2022년 9월)
+print("\n실제값 vs 예측값 비교 그래프 생성 중...")
+fig, axes = plt.subplots(2, 3, figsize=(20, 12))
+fig.suptitle(f'Actual vs Predicted - September 2022 ({best_model_name})',
+             fontsize=16, fontweight='bold', y=0.995)
+
+for idx, station in enumerate(target_cols):
+    ax = axes[idx // 3, idx % 3]
+    dates = predict_data['date'].values
+
+    # 실제값 (파란색)
+    actual_values = predict_data[station].values
+    # 예측값 (녹색)
+    predictions = final_predictions[station]
+
+    # 선 그래프
+    ax.plot(dates, actual_values, marker='o', linewidth=2.5, markersize=7,
+            color='blue', label='Actual', alpha=0.7)
+    ax.plot(dates, predictions, marker='s', linewidth=2.5, markersize=7,
+            color='green', label='Predicted', alpha=0.7)
+
+    # 면적 채우기
+    ax.fill_between(dates, actual_values, alpha=0.2, color='blue')
+    ax.fill_between(dates, predictions, alpha=0.2, color='green')
+
+    # MAE 계산
+    mae_sept = mean_absolute_error(actual_values, predictions)
+    mape_sept = calculate_mape(actual_values, predictions)
+
+    ax.set_xlabel('Date', fontsize=11, fontweight='bold')
+    ax.set_ylabel('Reports', fontsize=11, fontweight='bold')
+    ax.set_title(f'{station.upper()} (MAE: {mae_sept:.2f}, MAPE: {mape_sept:.2f}%)',
+                 fontsize=12, fontweight='bold')
+    ax.grid(True, alpha=0.3)
+    ax.tick_params(axis='x', rotation=45)
+    ax.legend(loc='upper right', fontsize=10)
+
+axes[1, 2].axis('off')
+plt.tight_layout()
+plt.savefig('final_actual_vs_predicted.png', dpi=300, bbox_inches='tight')
+print("✓ final_actual_vs_predicted.png 저장 완료")
+
 print("\n" + "="*100)
 print("최종 요약")
 print("="*100)
@@ -514,4 +556,5 @@ print(f"   - final_model_comparison.png")
 print(f"   - final_best_model_by_station.png")
 print(f"   - final_september_predictions.png")
 print(f"   - final_total_by_station.png")
+print(f"   - final_actual_vs_predicted.png (실제값 vs 예측값 비교)")
 print("="*100)
