@@ -19,6 +19,14 @@ from sklearn.preprocessing import StandardScaler
 import warnings
 warnings.filterwarnings('ignore')
 
+# MAPE 계산 함수
+def calculate_mape(y_true, y_pred):
+    """MAPE (Mean Absolute Percentage Error) 계산"""
+    y_true, y_pred = np.array(y_true), np.array(y_pred)
+    # 0으로 나누는 것을 방지
+    mask = y_true != 0
+    return np.mean(np.abs((y_true[mask] - y_pred[mask]) / y_true[mask])) * 100
+
 plt.rcParams['font.family'] = 'DejaVu Sans'
 plt.rcParams['axes.unicode_minus'] = False
 
@@ -142,6 +150,7 @@ for model_name, model in models.items():
         mae = mean_absolute_error(y_val_split, y_pred)
         rmse = np.sqrt(mean_squared_error(y_val_split, y_pred))
         r2 = r2_score(y_val_split, y_pred)
+        mape = calculate_mape(y_val_split, y_pred)
         accuracy = 100 * (1 - mae / y_val_split.mean())
 
         station_performances.append({
@@ -149,21 +158,24 @@ for model_name, model in models.items():
             'mae': mae,
             'rmse': rmse,
             'r2': r2,
+            'mape': mape,
             'accuracy': accuracy
         })
 
-        print(f"  {target:12s}: MAE={mae:6.2f}, RMSE={rmse:6.2f}, R²={r2:6.4f}, 정확도={accuracy:6.2f}%")
+        print(f"  {target:12s}: MAE={mae:6.2f}, RMSE={rmse:6.2f}, R²={r2:6.4f}, MAPE={mape:6.2f}%, 정확도={accuracy:6.2f}%")
 
     # 평균 성능 계산
     avg_mae = np.mean([p['mae'] for p in station_performances])
     avg_rmse = np.mean([p['rmse'] for p in station_performances])
     avg_r2 = np.mean([p['r2'] for p in station_performances])
+    avg_mape = np.mean([p['mape'] for p in station_performances])
     avg_accuracy = np.mean([p['accuracy'] for p in station_performances])
 
     model_avg_performance[model_name] = {
         'avg_mae': avg_mae,
         'avg_rmse': avg_rmse,
         'avg_r2': avg_r2,
+        'avg_mape': avg_mape,
         'avg_accuracy': avg_accuracy,
         'station_details': station_performances
     }
@@ -172,10 +184,11 @@ for model_name, model in models.items():
     print(f"  평균 MAE: {avg_mae:.4f}")
     print(f"  평균 RMSE: {avg_rmse:.4f}")
     print(f"  평균 R²: {avg_r2:.4f}")
+    print(f"  평균 MAPE: {avg_mape:.2f}%")
     print(f"  평균 정확도: {avg_accuracy:.2f}%")
 
-# 최고 성능 모델 선택
-best_model_name = max(model_avg_performance.items(), key=lambda x: x[1]['avg_accuracy'])[0]
+# 최고 성능 모델 선택 (MAPE가 낮을수록 좋음)
+best_model_name = min(model_avg_performance.items(), key=lambda x: x[1]['avg_mape'])[0]
 best_model_info = model_avg_performance[best_model_name]
 
 print("\n" + "="*100)
@@ -184,6 +197,7 @@ print("="*100)
 print(f"평균 MAE: {best_model_info['avg_mae']:.4f}")
 print(f"평균 RMSE: {best_model_info['avg_rmse']:.4f}")
 print(f"평균 R²: {best_model_info['avg_r2']:.4f}")
+print(f"평균 MAPE: {best_model_info['avg_mape']:.2f}%")
 print(f"평균 정확도: {best_model_info['avg_accuracy']:.2f}%")
 
 # 최고 모델로 최종 예측 수행
@@ -216,9 +230,10 @@ for target in target_cols:
     val_mae = mean_absolute_error(y_val_split, y_val_pred)
     val_rmse = np.sqrt(mean_squared_error(y_val_split, y_val_pred))
     val_r2 = r2_score(y_val_split, y_val_pred)
+    val_mape = calculate_mape(y_val_split, y_val_pred)
     val_accuracy = 100 * (1 - val_mae / y_val_split.mean())
 
-    print(f"  검증 성능: MAE={val_mae:.2f}, RMSE={val_rmse:.2f}, R²={val_r2:.4f}, 정확도={val_accuracy:.2f}%")
+    print(f"  검증 성능: MAE={val_mae:.2f}, RMSE={val_rmse:.2f}, R²={val_r2:.4f}, MAPE={val_mape:.2f}%, 정확도={val_accuracy:.2f}%")
 
     # 전체 데이터로 재학습 후 예측
     best_model.fit(X_train, y_train)
@@ -245,6 +260,7 @@ for target in target_cols:
         'val_mae': val_mae,
         'val_rmse': val_rmse,
         'val_r2': val_r2,
+        'val_mape': val_mape,
         'val_accuracy': val_accuracy,
         'pred_mean': pred_mean,
         'pred_std': pred_std,
@@ -280,18 +296,17 @@ with open('finalmodel.txt', 'w', encoding='utf-8') as f:
     f.write("모델별 평균 성능 비교\n")
     f.write("="*100 + "\n\n")
 
-    # 성능순 정렬
+    # 성능순 정렬 (MAPE 기준, 낮을수록 좋음)
     sorted_models = sorted(model_avg_performance.items(),
-                          key=lambda x: x[1]['avg_accuracy'],
-                          reverse=True)
+                          key=lambda x: x[1]['avg_mape'])
 
-    f.write(f"{'순위':<4} {'모델명':<20} {'평균 MAE':<12} {'평균 RMSE':<12} {'평균 R²':<12} {'평균 정확도':<12}\n")
-    f.write("-"*100 + "\n")
+    f.write(f"{'순위':<4} {'모델명':<20} {'평균 MAE':<12} {'평균 RMSE':<12} {'평균 R²':<12} {'평균 MAPE':<12} {'평균 정확도':<12}\n")
+    f.write("-"*120 + "\n")
 
     for rank, (model_name, perf) in enumerate(sorted_models, 1):
         marker = " ★★★" if model_name == best_model_name else ""
         f.write(f"{rank:<4} {model_name:<20} {perf['avg_mae']:<12.4f} {perf['avg_rmse']:<12.4f} "
-                f"{perf['avg_r2']:<12.4f} {perf['avg_accuracy']:<12.2f}%{marker}\n")
+                f"{perf['avg_r2']:<12.4f} {perf['avg_mape']:<12.2f}% {perf['avg_accuracy']:<12.2f}%{marker}\n")
 
     f.write("\n" + "="*100 + "\n")
     f.write(f"최고 성능 모델: {best_model_name}\n")
@@ -301,6 +316,7 @@ with open('finalmodel.txt', 'w', encoding='utf-8') as f:
     f.write(f"평균 MAE: {best_model_info['avg_mae']:.4f}건\n")
     f.write(f"평균 RMSE: {best_model_info['avg_rmse']:.4f}건\n")
     f.write(f"평균 R²: {best_model_info['avg_r2']:.4f}\n")
+    f.write(f"평균 MAPE: {best_model_info['avg_mape']:.2f}%\n")
     f.write(f"평균 정확도: {best_model_info['avg_accuracy']:.2f}%\n\n")
 
     f.write("="*100 + "\n")
@@ -313,6 +329,7 @@ with open('finalmodel.txt', 'w', encoding='utf-8') as f:
         f.write(f"    MAE (평균 절대 오차): {result['val_mae']:.4f}건\n")
         f.write(f"    RMSE (평균 제곱근 오차): {result['val_rmse']:.4f}건\n")
         f.write(f"    R² (결정계수): {result['val_r2']:.4f}\n")
+        f.write(f"    MAPE (평균 절대 백분율 오차): {result['val_mape']:.2f}%\n")
         f.write(f"    예측 정확도: {result['val_accuracy']:.2f}%\n")
         f.write(f"\n  <2022년 9월 예측 결과>\n")
         f.write(f"    일평균 신고량: {result['pred_mean']:.2f}건/일\n")
@@ -349,6 +366,8 @@ with open('finalmodel.txt', 'w', encoding='utf-8') as f:
     f.write("  예측 오차의 제곱 평균에 루트. 큰 오차에 민감. 값이 작을수록 좋음.\n\n")
     f.write("R² (R-squared):\n")
     f.write("  모델이 데이터 분산을 설명하는 비율. 0~1 사이 값. 1에 가까울수록 좋음.\n\n")
+    f.write("MAPE (Mean Absolute Percentage Error):\n")
+    f.write("  예측값과 실제값의 차이를 백분율로 나타낸 평균. 값이 작을수록 좋음.\n\n")
     f.write("예측 정확도 (%):\n")
     f.write("  100 × (1 - MAE / 평균값). 백분율 정확도. 100%에 가까울수록 좋음.\n\n")
 
@@ -356,8 +375,8 @@ with open('finalmodel.txt', 'w', encoding='utf-8') as f:
     f.write("결론\n")
     f.write("="*100 + "\n\n")
     f.write(f"코로나 기간(2020.01~2022.04)을 제외하고 학습한 결과,\n")
-    f.write(f"{best_model_name} 모델이 5개 역 전체에서 평균 {best_model_info['avg_accuracy']:.2f}%의\n")
-    f.write(f"예측 정확도로 최고 성능을 보였습니다.\n\n")
+    f.write(f"{best_model_name} 모델이 5개 역 전체에서 평균 MAPE {best_model_info['avg_mape']:.2f}%로\n")
+    f.write(f"최고 성능을 보였습니다. (평균 정확도: {best_model_info['avg_accuracy']:.2f}%)\n\n")
     f.write(f"2022년 9월 예상 신고량:\n")
     for result in detailed_results:
         f.write(f"  - {result['station']:12s}: {result['pred_total']:6.0f}건 (일평균 {result['pred_mean']:5.2f}건)\n")
@@ -372,24 +391,23 @@ print("\n시각화 생성 중...")
 fig, axes = plt.subplots(1, 2, figsize=(16, 6))
 fig.suptitle('Model Performance Comparison (Excluding COVID Period)', fontsize=16, fontweight='bold')
 
-# 평균 정확도 비교
+# 평균 MAPE 비교 (낮을수록 좋음)
 ax1 = axes[0]
 sorted_models_data = sorted(model_avg_performance.items(),
-                            key=lambda x: x[1]['avg_accuracy'],
-                            reverse=True)
+                            key=lambda x: x[1]['avg_mape'])
 model_names = [m[0] for m in sorted_models_data]
-accuracies = [m[1]['avg_accuracy'] for m in sorted_models_data]
+mapes = [m[1]['avg_mape'] for m in sorted_models_data]
 colors = ['#e74c3c' if name == best_model_name else '#3498db' for name in model_names]
 
-bars = ax1.barh(model_names, accuracies, color=colors)
-ax1.set_xlabel('Average Accuracy (%)', fontsize=12, fontweight='bold')
-ax1.set_title('Average Prediction Accuracy', fontsize=13, fontweight='bold')
+bars = ax1.barh(model_names, mapes, color=colors)
+ax1.set_xlabel('Average MAPE (%)', fontsize=12, fontweight='bold')
+ax1.set_title('Average Mean Absolute Percentage Error (Lower is Better)', fontsize=13, fontweight='bold')
 ax1.invert_yaxis()
 ax1.grid(axis='x', alpha=0.3)
 
-for bar, acc in zip(bars, accuracies):
-    ax1.text(bar.get_width() + 0.3, bar.get_y() + bar.get_height()/2,
-            f'{acc:.2f}%', va='center', fontsize=11, fontweight='bold')
+for bar, mape in zip(bars, mapes):
+    ax1.text(bar.get_width() + 0.1, bar.get_y() + bar.get_height()/2,
+            f'{mape:.2f}%', va='center', fontsize=11, fontweight='bold')
 
 # 평균 MAE 비교
 ax2 = axes[1]
@@ -410,23 +428,22 @@ plt.tight_layout()
 plt.savefig('final_model_comparison.png', dpi=300, bbox_inches='tight')
 print("✓ final_model_comparison.png 저장 완료")
 
-# 2. 최고 모델의 역별 성능
+# 2. 최고 모델의 역별 성능 (MAPE)
 fig, ax = plt.subplots(figsize=(12, 7))
 stations = [r['station'] for r in detailed_results]
-accuracies_by_station = [r['val_accuracy'] for r in detailed_results]
+mapes_by_station = [r['val_mape'] for r in detailed_results]
 colors_station = ['#2ecc71', '#3498db', '#9b59b6', '#e74c3c', '#f39c12']
 
-bars = ax.bar(stations, accuracies_by_station, color=colors_station, edgecolor='black', linewidth=1.5)
-ax.set_ylabel('Prediction Accuracy (%)', fontsize=13, fontweight='bold')
+bars = ax.bar(stations, mapes_by_station, color=colors_station, edgecolor='black', linewidth=1.5)
+ax.set_ylabel('MAPE (%)', fontsize=13, fontweight='bold')
 ax.set_xlabel('Station', fontsize=13, fontweight='bold')
-ax.set_title(f'{best_model_name} - Performance by Station (Excluding COVID Period)',
+ax.set_title(f'{best_model_name} - MAPE by Station (Excluding COVID Period, Lower is Better)',
              fontsize=14, fontweight='bold', pad=20)
 ax.grid(axis='y', alpha=0.3)
-ax.set_ylim(0, 100)
 
-for bar, acc in zip(bars, accuracies_by_station):
-    ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 1,
-            f'{acc:.2f}%', ha='center', va='bottom', fontsize=11, fontweight='bold')
+for bar, mape in zip(bars, mapes_by_station):
+    ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.2,
+            f'{mape:.2f}%', ha='center', va='bottom', fontsize=11, fontweight='bold')
 
 plt.tight_layout()
 plt.savefig('final_best_model_by_station.png', dpi=300, bbox_inches='tight')
@@ -448,7 +465,7 @@ for idx, (station, result) in enumerate(zip(target_cols, detailed_results)):
 
     ax.set_xlabel('Date', fontsize=11, fontweight='bold')
     ax.set_ylabel('Predicted Reports', fontsize=11, fontweight='bold')
-    ax.set_title(f'{station.upper()} (Avg: {result["pred_mean"]:.1f}, Accuracy: {result["val_accuracy"]:.1f}%)',
+    ax.set_title(f'{station.upper()} (Avg: {result["pred_mean"]:.1f}, MAPE: {result["val_mape"]:.1f}%)',
                  fontsize=12, fontweight='bold')
     ax.grid(True, alpha=0.3)
     ax.tick_params(axis='x', rotation=45)
@@ -487,8 +504,9 @@ print("\n" + "="*100)
 print("최종 요약")
 print("="*100)
 print(f"\n★ 최고 성능 모델: {best_model_name}")
-print(f"   평균 예측 정확도: {best_model_info['avg_accuracy']:.2f}%")
+print(f"   평균 MAPE: {best_model_info['avg_mape']:.2f}%")
 print(f"   평균 MAE: {best_model_info['avg_mae']:.4f}건")
+print(f"   평균 예측 정확도: {best_model_info['avg_accuracy']:.2f}%")
 print(f"\n★ 2022년 9월 전체 예측: {total_monthly:.0f}건 (일평균 {total_daily_avg:.2f}건)")
 print(f"\n생성된 파일:")
 print(f"   - finalmodel.txt (상세 분석 결과)")
